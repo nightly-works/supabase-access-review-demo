@@ -29,7 +29,7 @@ do $$ begin
   perform send_like('00000000-0000-0000-0000-00000000000b');
   raise exception 'FAIL: like sent with an empty quota';
 exception when raise_exception then
-  if sqlerrm like 'FAIL%' then raise; end if;
+  if sqlerrm <> 'no likes left today' then raise; end if;
   raise notice 'fix 3 holds: send_like refused with no likes left (%)', sqlerrm;
 end $$;
 do $$ begin

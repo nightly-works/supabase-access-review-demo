@@ -27,6 +27,11 @@ grant execute on function send_like(uuid) to authenticated;
 
 -- Fix 4: the quota reset is for the scheduler only (it runs as the service role, here the table owner).
 revoke execute on function reset_likes(uuid) from public, anon, authenticated;
+-- A security definer function with a mutable search_path can be steered to other objects (Supabase's advisor flags it).
+alter function reset_likes(uuid) set search_path = public;
 
 -- Also closed: anon had every table privilege by default, guarded by the absence of anon policies only.
 revoke all on profiles, likes from anon;
+-- authenticated kept the other default privileges too; RLS never applies to TRUNCATE.
+revoke insert, delete, truncate, trigger, references on profiles from authenticated;
+revoke delete, truncate, trigger, references on likes from authenticated;

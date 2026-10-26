@@ -6,11 +6,11 @@ do $$ begin
   if (select likes_left from profiles where id = auth.uid()) <> 999 then raise exception 'FAIL: expected the quota reset to work'; end if;
   raise notice 'flaw 1 reproduced: Alice set her own like quota to 999';
 end $$;
-do $$ declare e text; begin
+do $$ declare e text; b date; lat double precision; begin
   -- supabase.from('profiles').select('email, birth_date, latitude, longitude')
-  select email into e from profiles where id = '00000000-0000-0000-0000-00000000000b';
-  if e is null then raise exception 'FAIL: expected Bob''s email to be readable'; end if;
-  raise notice 'flaw 2 reproduced: Alice read Bob''s email (%), birth date and exact location', e;
+  select email, birth_date, latitude into e, b, lat from profiles where id = '00000000-0000-0000-0000-00000000000b';
+  if e is null or b is null or lat is null then raise exception 'FAIL: expected Bob''s email, birth date and location to be readable'; end if;
+  raise notice 'flaw 2 reproduced: Alice read Bob''s email (%), birth date (%) and latitude (%)', e, b, lat;
 end $$;
 do $$ begin
   -- supabase.from('likes').insert(...) a hundred times, quota untouched
